@@ -1,0 +1,793 @@
+swagger: '2.0'
+
+################################################################################
+#                              API Information                                 #
+################################################################################
+info:
+  version: "1.0.0"
+  title: TimePuncher
+  contact:
+    name: Hans Tschan
+    url: http://timepuncher.ch
+    email: hans.tschan@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+host: localhost:3000
+basePath: /api/v1
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+
+################################################################################
+#                                  Security                                    #
+################################################################################
+
+
+
+################################################################################
+#                                           Paths                              #
+################################################################################
+paths:
+  /authenticate:
+    post:
+      description:
+        Ein Benutzer authentifiziert sich mit Benutzername und Passwort
+      summary: Sendet eine Authentifizierungsanfrage an den Server
+      operationId: authenticate
+      parameters:
+        - name: username
+          in: header
+          type: string
+          required: true
+          description: Eine ASCII-Zeichenfolge mit mindestens einem Zeichen.
+        - name: password
+          in: header
+          type: string
+          required: true
+          description: Eine ASCII-Zeichenfolge.
+      tags:
+        - Authentication
+        - User
+      responses:
+        200:
+          description: Returns nothing
+          schema:
+            $ref: '#/definitions/AuthResponse'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/OpResult'
+  /register:
+    post:
+      description:
+        Ein Benutzer registriert sich mit einem Satz von Registrierungsparametern.
+        Bei erfolgreicher Registrierung empfängt der Benutzer eine E-Mail mit
+        einem Registrierungslink. Dieser kann einmalig verwendet werden. Danach
+        kann sich der Benutzer anmelden.
+      summary: Einen Benutzer registrieren
+      operationId: registerUser
+      parameters:
+        - name: registerParams
+          in: body
+          required: true
+          description: Registrierungsinformationen
+          schema:
+            $ref: '#/definitions/RegisterParams'
+      tags:
+        - Authentication
+        - User
+      responses:
+        200:
+          description: Die Operation war erfolgreich.
+            Der Benutzer erhält eine E-Mail mit einem Bestätigungslink.
+          schema:
+            $ref: '#/definitions/RegisterResponse'
+        default:
+          description: Unerwarteter Fehler
+          schema:
+            $ref: '#/definitions/OpResult'
+  /confirm:
+    post:
+      description:
+        Diese Methode wird durch den Bestätigungslink aufgerufen.
+      summary: Eine Benutzerregistrierung bestätigen
+      operationId: confirmRegister
+      parameters:
+        - name: confirmToken
+          in: query
+          type: string
+          required: true
+          description: Registrierungsbestätigung
+      tags:
+        - Authentication
+        - User
+      responses:
+        200:
+          description: Die Operation war erfolgreich.
+          schema:
+            $ref: '#/definitions/ConfirmResponse'
+        default:
+          description: Unerwarteter Fehler
+          schema:
+            $ref: '#/definitions/OpResult'
+  /recoverPassword:
+    post:
+      description:
+        Ein Benutzer hat das Passwort vergessen und möchte ein neues definieren.
+        Der Benutzer bekommt auf seine E-Mail Adresse eine Mail mit einem Passwortresetcode.
+        Den Code muss er bei der SetPassword-Operation mitgeben.
+      summary: Passwort wiederherstellen
+      operationId: recoverPassword
+      parameters:
+        - name: recoverPasswordParams
+          in: body
+          required: true
+          description: Wiederherstellungsparameter
+          schema:
+            $ref: '#/definitions/RecoverPasswordParams'
+      tags:
+        - Authentication
+        - User
+      responses:
+        200:
+          description: Die Operation war erfolgreich.
+            Der Benutzer erhält eine E-Mail mit einem Passwortresetcode.
+          schema:
+            $ref: '#/definitions/RecoverPasswordResponse'
+        default:
+          description: Unerwarteter Fehler
+          schema:
+            $ref: '#/definitions/OpResult'
+  /recoverUsername:
+    post:
+      description:
+        Ein Benutzer hat seinen Benutzernamen vergessen.
+        Nach Ausführung dieser Operation bekommt der Benutzer auf seine E-Mail Adresse 
+        eine E-Mail mit seinem Benutzernamen.
+      summary: Abfrage des Usernamens
+      operationId: recoverUsername
+      parameters:
+        - name: recoverUsernameParams
+          in: body
+          required: true
+          description: Wiederherstellungsparameter
+          schema:
+            $ref: '#/definitions/RecoverUsernameParams'
+      tags:
+        - Authentication
+        - User
+      responses:
+        200:
+          description: Die Operation war erfolgreich.
+            Der Benutzer erhält eine E-Mail mit seinem Benutzernamen.
+          schema:
+            $ref: '#/definitions/RecoverUsernameResponse'
+        default:
+          description: Unerwarteter Fehler
+          schema:
+            $ref: '#/definitions/OpResult'
+  /setPassword:
+    post:
+      description:
+        Der Benutzer muss einen Passwortresetcode anfordern mit Operation *recoverPassword*.
+        Der Passwortresetcode wird an die E-Mail Adresse des Benutzers geliefert.
+        Der Benutzer setzt ein neues Passwort zusammen mit dem Passwortresetcode.
+      summary: Ein Benutzer setzt ein neues Passwort
+      operationId: setPassword
+      parameters:
+        - name: setPasswordParams
+          in: body
+          required: true
+          description: Wiederherstellungsparameter
+          schema:
+            $ref: '#/definitions/SetPasswordParams'
+        - name: x-access-token
+          in: header
+          type: string
+          description: Der Authentifizierungstoken
+          required: true
+      tags:
+        - Authentication
+        - User
+      responses:
+        200:
+          description: Die Operation war erfolgreich.
+          schema:
+            $ref: '#/definitions/SetPasswordResponse'
+        default:
+          description: Unerwarteter Fehler
+          schema:
+            $ref: '#/definitions/OpResult'
+  /profiles:
+    get:
+      description: |
+        Abfragen des eigenen Profils. Nur mit Admin-Rolle möglich.
+      summary:
+        Abfrage aller Profile
+      operationId: getProfiles
+      tags:
+        - User
+      responses:
+        200:
+          description: Die Operation war erfolgreich.
+          schema:
+            $ref: '#/definitions/GetProfilesResponse'
+        default:
+          description: Unerwarteter Fehler
+          schema:
+            $ref: '#/definitions/OpResult'
+  /profiles/myprofile:
+    get:
+      description: |
+        Abfragen des eigenen Profils.
+      summary:
+        Abfrage des eigenen Profils
+      operationId: getMyProfile
+      tags:
+        - User
+      responses:
+        200:
+          description: Die Operation war erfolgreich.
+          schema:
+            $ref: '#/definitions/GetProfileResponse'
+        default:
+          description: Unerwarteter Fehler
+          schema:
+            $ref: '#/definitions/OpResult'
+  /profiles/{userid}:
+    get:
+      description: |
+        Abfragen des Profils eines anderen Benutzers. Nur mit Admin-Rolle möglich.
+      summary:
+        Abfrage eines Benutzerprofiles
+      operationId: getProfile
+      tags:
+        - User
+      parameters:
+        - name: userid
+          in: path
+          description: User Id
+          required: True
+          type: string
+      responses:
+        200:
+          description: Die Operation war erfolgreich.
+          schema:
+            $ref: '#/definitions/GetProfileResponse'
+        default:
+          description: Unerwarteter Fehler
+          schema:
+            $ref: '#/definitions/OpResult'
+  /punches:
+    get:
+      description: |
+        - [x] this operation is for test purposes
+        - [x] it returns the complete database entity 
+      summary: Retrieves all punches of current user
+      operationId: getPunches
+      produces:
+        - application/json
+      tags:
+        - Punches
+        - Temporary
+      parameters:
+        - name: x-access-token
+          in: header
+          type: string
+          description: Der Authentifizierungstoken
+          required: true
+      responses:
+        200:
+          description: An array of products
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Punch'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/OpResult'
+  /punches/today:
+    get:
+      description: |
+        Get all punches of today for current user
+      summary: Retrieves all punches of current user of today
+      operationId: getToday
+      produces:
+        - application/json
+      tags:
+        - Punches
+      parameters:
+        - name: x-access-token
+          in: header
+          type: string
+          description: Der Authentifizierungstoken
+          required: true
+      responses:
+        200:
+          description: An day punches object
+          schema:
+            $ref: '#/definitions/DayResponse'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/OpResult'
+  /punches/thisweek:
+    get:
+      description: |
+        Get all punches of current week for current user
+      summary: Retrieves all punches of current user of today
+      operationId: getThisWeek
+      produces:
+        - application/json
+      tags:
+        - Punches
+      parameters:
+        - name: x-access-token
+          in: header
+          type: string
+          description: Der Authentifizierungstoken
+          required: true
+      responses:
+        200:
+          description: A week punches object
+          schema:
+            $ref: '#/definitions/WeekResponse'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/OpResult'
+  /punches/thismonth:
+    get:
+      description: |
+        Get all punches of today for current user
+      summary: Retrieves all punches of current user of today
+      operationId: getThisMonth
+      produces:
+        - application/json
+      tags:
+        - Punches
+      parameters:
+        - name: x-access-token
+          in: header
+          type: string
+          description: Der Authentifizierungstoken
+          required: true
+      responses:
+        200:
+          description: A month punches object
+          schema:
+            $ref: '#/definitions/MonthResponse'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/OpResult'
+  /punches/thisyear:
+    get:
+      description: |
+        Get all punches of current year for current user
+      summary: Retrieves all punches of current user of this year
+      operationId: getThisYear
+      produces:
+        - application/json
+      tags:
+        - Punches
+      parameters:
+        - name: x-access-token
+          in: header
+          type: string
+          description: Der Authentifizierungstoken
+          required: true
+      responses:
+        200:
+          description: A year punches object
+          schema:
+            $ref: '#/definitions/YearResponse'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/OpResult'
+  /punches/punch/In:
+    post:
+      description: |
+        Erzeugt einen Zeitstempel. Falls die Monatsabrechnung des aktuellen Monats noch
+        nicht existiert, wird eine Monatsabrechung eröffnet mit dem Status *open*.
+      summary: Erzeugt einen Zeitstempel
+      operationId: punchIn
+      tags:
+        - Punches
+      parameters:
+        - name: x-access-token
+          in: header
+          type: string
+          description: Der Authentifizierungstoken
+          required: true
+      responses:
+        200:
+          description: An array of punches
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PunchResponse'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/OpResult'
+  /punches/punch/Out:
+    post:
+      description: |
+        Erzeugt einen Zeitstempel. Falls die Monatsabrechnung des aktuellen Monats noch
+        nicht existiert, wird eine Monatsabrechung eröffnet mit dem Status *open*.
+      summary: Erzeugt einen Zeitstempel
+      operationId: punchOut
+      tags:
+        - Punches
+      parameters:
+        - name: x-access-token
+          in: header
+          type: string
+          description: Der Authentifizierungstoken
+          required: true
+      responses:
+        200:
+          description: An array of punches
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PunchResponse'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/OpResult'
+  /punchModify:
+    post:
+      description: |
+        Modifiziert einen Zeitstempel des aktuellen Benutzers.
+        Die Monatsabrechnung muss im Status *open* sein
+        damit der Benutzer modifizieren kann.
+      summary: Modifiziert einen Zeitstempel
+      operationId: punchModify
+      tags:
+        - Punches
+      parameters:
+        - name: x-access-token
+          in: header
+          type: string
+          description: Der Authentifizierungstoken
+          required: true
+        - name: modifyPunchParams
+          in: body
+          schema:
+            $ref: '#/definitions/ModifyPunchParams'
+      responses:
+        200:
+          description: An array of punches
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PunchResponse'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/OpResult'
+  /punchModifyAdmin:
+    post:
+      description: | 
+        Modifiziert einen Zeitstempel eines beliebigen Benutzers.
+        Die Monatsabrechnung muss im Status *openAdmin* sein.
+      summary: Modifiziert einen Zeitstempel
+      operationId: punchModifyAdmin
+      tags:
+        - Punches
+      parameters:
+        - name: x-access-token
+          in: header
+          type: string
+          description: Der Authentifizierungstoken
+          required: true
+        - name: modifyPunchAdminParams
+          in: body
+          schema:
+            $ref: '#/definitions/ModifyPunchAdminParams'
+      responses:
+        200:
+          description: An array of PunchVm
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PunchResponse'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/OpResult'
+  /punchSetStatusAdmin:
+    post:
+      description: |
+        Setzt den Status der Monatsabrechnung eines Benutzers. Der Status kann folgende Werte einnehmen:
+        - *open*
+        - *openAdmin*
+        - *closed*
+      summary: Setzt den Status der Monatsabrechung
+      operationId: punchSetStatusAdmin
+      tags:
+        - Punches
+      parameters:
+        - name: x-access-token
+          in: header
+          type: string
+          description: Der Authentifizierungstoken
+          required: true
+        - name: setStatusAdminParams
+          in: body
+          schema:
+            $ref: '#/definitions/SetStatusAdminParams'
+      responses:
+        200:
+          description: An array of PunchVm
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PunchResponse'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/OpResult'
+      
+################################################################################
+#                         Top - Level - Definitions                            #
+################################################################################      
+definitions:
+  AuthResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/OpResult'
+      token:
+        type: string
+        description: 
+          Ein Authentifizierungstoken mit dem alle folgenden Aufrufe authentifiziert werden.
+  RegisterParams:
+    type: object
+    properties:
+      firstname:
+        type: string
+        description: Der Vorname, 1 .. 80 Zeichen
+      name:
+        type: string
+        description: Der Name, 1 .. 80 Zeichen
+      email:
+        type: string
+        format: email
+        description: Die E-Mail Adresse 1 .. 160 Zeichen. Wird benötigt für die Bestätigung der Kontoerstellung.
+      username:
+        type: string
+        description: Der Benutzername 1 .. 80 Zeichen. Wird für das Anmeldung benötigt.
+      password:
+        type: string
+        description: Das Passwort 1 .. 80 Zeichen. Wird für die Anmeldung benötigt.
+  RegisterResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/OpResult'
+  ConfirmResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/OpResult'
+  RecoverPasswordParams:
+    type: object
+    properties:
+      email:
+        type: string
+        format: email
+        description: Die E-Mail Adresse 1 .. 160 Zeichen. Wird benötigt für die Bestätigung der Kontoerstellung.
+      username:
+        type: string
+        description: Der Benutzername 1 .. 80 Zeichen. Wird für das Anmeldung benötigt.
+  RecoverUsernameParams:
+    type: object
+    properties:
+      email:
+        type: string
+        format: email
+        description: Die E-Mail Adresse 1 .. 160 Zeichen. Wird benötigt für die Bestätigung der Kontoerstellung.
+  RecoverPasswordResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/OpResult'
+  RecoverUsernameResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/OpResult'
+  SetPasswordParams:
+    type: object
+    properties:
+      code:
+        type: string
+        description: Der Passwortresetcode.
+      username:
+        type: string
+        description: Der Benutzername 1 .. 80 Zeichen. Wird für das Anmeldung benötigt.
+      password:
+        type: string
+        description: Das Passwort 1 .. 80 Zeichen. Wird für die Anmeldung benötigt.
+  SetPasswordResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/OpResult'
+  GetProfilesResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/OpResult'
+  GetProfileResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/OpResult'
+  PunchResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/OpResult'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/DayPunchesVm'
+  DayResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/OpResult'
+      punches:
+        $ref: '#/definitions/DayPunchesVm'
+  WeekResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/OpResult'
+      punches:
+        $ref: '#/definitions/WeekPunchesVm'
+  MonthResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/OpResult'
+      punches:
+        $ref: '#/definitions/MonthPunchesVm'
+  YearResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/OpResult'
+      punches:
+        $ref: '#/definitions/YearPunchesVm'
+  ModifyPunchParams:
+    type: object
+    properties:
+      punchid:
+        type: number
+      timedec:
+        type: number
+        format: float
+      direction:
+        type: boolean
+  ModifyPunchAdminParams:
+    type: object
+    properties:
+      punchid:
+        type: number
+      userid:
+        type: string
+      timedec:
+        type: number
+        format: float
+      direction:
+        type: boolean
+  SetStatusAdminParams:
+    type: object
+    properties:
+      userid:
+        type: string
+      status:
+        type: string
+
+################################################################################
+#                                 Sub - Definitions                            #
+################################################################################              
+  YearPunchesVm:
+    type: object
+    properties:
+      user:
+        type: string
+      month:
+        type: string
+      year:
+        type: string
+      punches:
+        type: array
+        items:
+          $ref: '#/definitions/MonthPunchesVm'
+  MonthPunchesVm:
+    type: object
+    properties:
+      user:
+        type: string
+      month:
+        type: string
+      year:
+        type: string
+      punches:
+        type: array
+        items:
+          $ref: '#/definitions/DayPunchesVm'
+  WeekPunchesVm:
+    type: object
+    properties:
+      user:
+        type: string
+      week:
+        type: string
+      year:
+        type: string
+      punches:
+        type: array
+        items:
+          $ref: '#/definitions/DayPunchesVm'
+  DayPunchesVm:
+    type: object
+    properties:
+      userboid:
+        type: string
+      day:
+        type: number
+      month:
+        type: number
+      year:
+        type: number
+      punches:
+        type: array
+        items:
+          $ref: '#/definitions/Punch'
+      daytotal:
+        type: number
+        format: float
+  Punch:
+    type: object
+    properties:
+      time:
+        type: string
+        format: Date
+      timedec:
+        type: number
+        format: float
+      direction:
+        type: boolean
+        description: True means enter work, Fals means leave work.
+      created:
+        type: string
+        format: date-time
+        description: The timestamp of the creation of this value.
+      updated:
+        type: string
+        format: date-time
+        description: The timestamp of the last update of this value.
+      punchid:
+        type: number
+  OpResult:
+    type: object
+    properties:
+      success:
+        type: boolean
+        description: True wenn die Operation erfolgreich war
+      result:
+        type: object
+        description: Eine Text-Meldung

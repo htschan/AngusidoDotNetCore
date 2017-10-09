@@ -1,0 +1,511 @@
+swagger: '2.0'
+
+################################################################################
+#                              API Information                                 #
+################################################################################
+info:
+  version: "1.0.0"
+  title: Angusido
+  contact:
+    name: Hans Tschan
+    url: http://angusido.com
+    email: hans.tschan@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+host: localhost:3000
+basePath: /api/v1
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+
+################################################################################
+#                                  Security                                    #
+################################################################################
+
+
+
+################################################################################
+#                                           Paths                              #
+################################################################################
+paths:
+  /authenticate:
+    post:
+      description:
+        Ein Benutzer authentifiziert sich mit Benutzername und Passwort
+      summary: Sendet eine Authentifizierungsanfrage an den Server [AllowAnonymous]
+      operationId: authenticate
+      parameters:
+        - name: credentials
+          in: body
+          required: true
+          description: Eine ASCII-Zeichenfolge mit mindestens einem Zeichen.
+          schema:
+            $ref: '#/definitions/CredentialDto'
+      tags:
+        - Authentication
+      responses:
+        200:
+          description: Returns nothing
+          schema:
+            $ref: '#/definitions/AuthResponse'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/OpResult'
+  /refreshtoken:
+    post:
+      description:
+        Ein Benutzer erneuert den Token
+      summary: Sendet eine RefreshToken Abfrage an den Server [AllowAnonymous]
+      operationId: refreshtoken
+      parameters:
+        - name: refreshtokenparameter
+          in: body
+          required: true
+          description: Eine ASCII-Zeichenfolge mit mindestens einem Zeichen.
+          schema:
+            $ref: '#/definitions/RefreshTokenDto'
+      tags:
+        - Authentication
+      responses:
+        default:
+          description: AuthResponse
+          schema:
+            $ref: '#/definitions/AuthResponse'
+  /register:
+    post:
+      description:
+        Ein Benutzer registriert sich mit einem Satz von Registrierungsparametern.
+        Bei erfolgreicher Registrierung empfängt der Benutzer eine E-Mail mit
+        einem Registrierungslink. Dieser kann einmalig verwendet werden. Danach
+        kann sich der Benutzer anmelden.
+      summary: Einen Benutzer registrieren [AllowAnonymous]
+      operationId: registerUser
+      parameters:
+        - name: registerDto
+          in: body
+          required: true
+          description: Registrierungsinformationen
+          schema:
+            $ref: '#/definitions/RegisterDto'
+      tags:
+        - Authentication
+      responses:
+        200:
+          description: Die Operation war erfolgreich.
+            Der Benutzer erhält eine E-Mail mit einem Bestätigungslink.
+          schema:
+            $ref: '#/definitions/RegisterResponse'
+        default:
+          description: Unerwarteter Fehler
+          schema:
+            $ref: '#/definitions/OpResult'
+  /confirm:
+    get:
+      description:
+        Diese Methode wird durch den Bestätigungslink aufgerufen.
+      summary: Eine Benutzerregistrierung bestätigen [AllowAnonymous]
+      operationId: confirmRegister
+      parameters:
+        - name: id
+          in: query
+          type: string
+          required: true
+          description: Userid
+        - name: cnf
+          in: query
+          type: string
+          required: true
+          description: Confirmationtoken
+      tags:
+        - Authentication
+      responses:
+        200:
+          description: Die Operation war erfolgreich.
+          schema:
+            $ref: '#/definitions/ConfirmResponse'
+        default:
+          description: Unerwarteter Fehler
+          schema:
+            $ref: '#/definitions/OpResult'
+  /recoverPassword:
+    post:
+      description:
+        Ein Benutzer hat das Passwort vergessen und möchte ein neues definieren.
+        Der Benutzer bekommt auf seine E-Mail Adresse eine Mail mit einem Passwortresetcode.
+        Den Code muss er bei der SetPassword-Operation mitgeben.
+      summary: Passwort wiederherstellen [AllowAnonymous]
+      operationId: recoverPassword
+      parameters:
+        - name: recoverPasswordParams
+          in: body
+          required: true
+          description: Wiederherstellungsparameter
+          schema:
+            $ref: '#/definitions/RecoverPasswordParams'
+      tags:
+        - Authentication
+      responses:
+        200:
+          description: Die Operation war erfolgreich.
+            Der Benutzer erhält eine E-Mail mit einem Passwortresetcode.
+          schema:
+            $ref: '#/definitions/RecoverPasswordResponse'
+        default:
+          description: Unerwarteter Fehler
+          schema:
+            $ref: '#/definitions/OpResult'
+  /recoverUsername:
+    post:
+      description:
+        Ein Benutzer hat seinen Benutzernamen vergessen.
+        Nach Ausführung dieser Operation bekommt der Benutzer auf seine E-Mail Adresse 
+        eine E-Mail mit seinem Benutzernamen.
+      summary: Abfrage des Usernamens [AllowAnonymous]
+      operationId: recoverUsername
+      parameters:
+        - name: recoverUsernameParams
+          in: body
+          required: true
+          description: Wiederherstellungsparameter
+          schema:
+            $ref: '#/definitions/RecoverUsernameParams'
+      tags:
+        - Authentication
+      responses:
+        200:
+          description: Die Operation war erfolgreich.
+            Der Benutzer erhält eine E-Mail mit seinem Benutzernamen.
+          schema:
+            $ref: '#/definitions/RecoverUsernameResponse'
+        default:
+          description: Unerwarteter Fehler
+          schema:
+            $ref: '#/definitions/OpResult'
+  /setPassword:
+    post:
+      description:
+        Der Benutzer muss einen Passwortresetcode anfordern mit Operation *recoverPassword*.
+        Der Passwortresetcode wird an die E-Mail Adresse des Benutzers geliefert.
+        Der Benutzer setzt ein neues Passwort zusammen mit dem Passwortresetcode.
+      summary: Ein Benutzer setzt ein neues Passwort [AllowAnonymous]
+      operationId: setPassword
+      parameters:
+        - name: setPasswordParams
+          in: body
+          required: true
+          description: Wiederherstellungsparameter
+          schema:
+            $ref: '#/definitions/SetPasswordParams'
+      tags:
+        - Authentication
+      responses:
+        200:
+          description: Die Operation war erfolgreich.
+          schema:
+            $ref: '#/definitions/SetPasswordResponse'
+        default:
+          description: Unerwarteter Fehler
+          schema:
+            $ref: '#/definitions/OpResult'
+  /profiles:
+    get:
+      description: |
+        Abfragen des eigenen Profils. Nur mit Admin-Rolle möglich.
+      summary:
+        Abfrage aller Profile
+      operationId: getProfiles
+      tags:
+        - Profile
+      responses:
+        200:
+          description: Die Operation war erfolgreich.
+          schema:
+            $ref: '#/definitions/GetProfilesResponse'
+        default:
+          description: Unerwarteter Fehler
+          schema:
+            $ref: '#/definitions/OpResult'
+  /profiles/myprofile:
+    get:
+      description: |
+        Abfragen des eigenen Profils.
+      summary:
+        Abfrage des eigenen Profils
+      operationId: getMyProfile
+      tags:
+        - Profile
+      responses:
+        200:
+          description: Die Operation war erfolgreich.
+          schema:
+            $ref: '#/definitions/GetProfileResponse'
+        default:
+          description: Unerwarteter Fehler
+          schema:
+            $ref: '#/definitions/OpResult'
+  /profiles/{userid}:
+    get:
+      description: |
+        Abfragen des Profils eines anderen Benutzers. Nur mit Admin-Rolle möglich.
+      summary:
+        Abfrage eines Benutzerprofiles
+      operationId: getProfile
+      tags:
+        - Profile
+      parameters:
+        - name: userid
+          in: path
+          description: User Id
+          required: True
+          type: string
+      responses:
+        200:
+          description: Die Operation war erfolgreich.
+          schema:
+            $ref: '#/definitions/GetProfileResponse'
+        default:
+          description: Unerwarteter Fehler
+          schema:
+            $ref: '#/definitions/OpResult'
+###########                                 Administration    ###########            
+  /admin/users:
+    get:
+      description:
+        Get all users
+      summary: Get the list of users [Authorize(Policy = "RequireApiAdminRole")]
+      operationId: adminGetUsers
+      tags:
+        - Administration
+      responses:
+        200:
+          description: Returns nothing
+          schema:
+            $ref: '#/definitions/UsersDto'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/OpResult'            
+  /admin/sessions:
+    get:
+      description:
+        Get all sessions
+      summary: Get the list of sessions [Authorize(Policy = "RequireApiAdminRole")]
+      operationId: adminGetSessions
+      tags:
+        - Administration
+      responses:
+        200:
+          description: Returns nothing
+          schema:
+            $ref: '#/definitions/SessionsDto'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/OpResult'              
+################################################################################
+#                         Top - Level - Definitions                            #
+################################################################################      
+definitions:
+  AuthResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/OpResult'
+      validFor:
+        type: integer
+        description:
+          The token will be valid for validFor seconds
+      id:
+        type: string
+        description:
+          The user id
+      token:
+        type: string
+        description: 
+          Ein Authentifizierungstoken mit dem alle folgenden Aufrufe authentifiziert werden.
+      refreshtoken:
+        type: string
+        description: 
+          Ein RefreshToken mit dem der token erneuert werden kann.
+  CredentialDto:
+    type: object
+    properties:
+      client_type:
+        type: string
+        description: Der Client-Typ 'web', 'ionic'
+      username:
+        type: string
+        format: email
+        description: Die E-Mail Adresse 1 .. 160 Zeichen. Wird benötigt für die Bestätigung der Kontoerstellung.
+      password:
+        type: string
+        description: Das Passwort 1 .. 80 Zeichen. Wird für die Anmeldung benötigt.
+  RefreshTokenDto:
+    type: object
+    properties:
+      refresh_token:
+        type: string
+        description: Der Refresh Token
+  RegisterDto:
+    type: object
+    properties:
+      firstname:
+        type: string
+        description: Der Vorname, 1 .. 80 Zeichen
+      name:
+        type: string
+        description: Der Name, 1 .. 80 Zeichen
+      email:
+        type: string
+        format: email
+        description: Die E-Mail Adresse 1 .. 160 Zeichen. Wird benötigt für die Bestätigung der Kontoerstellung.
+      username:
+        type: string
+        description: Der Benutzername 1 .. 80 Zeichen. Wird für das Anmeldung benötigt.
+      password:
+        type: string
+        description: Das Passwort 1 .. 80 Zeichen. Wird für die Anmeldung benötigt.
+  RegisterResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/OpResult'
+  ConfirmResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/OpResult'
+  RecoverPasswordParams:
+    type: object
+    properties:
+      email:
+        type: string
+        format: email
+        description: Die E-Mail Adresse 1 .. 160 Zeichen. Wird benötigt für die Bestätigung der Kontoerstellung.
+      username:
+        type: string
+        description: Der Benutzername 1 .. 80 Zeichen. Wird für das Anmeldung benötigt.
+  RecoverUsernameParams:
+    type: object
+    properties:
+      email:
+        type: string
+        format: email
+        description: Die E-Mail Adresse 1 .. 160 Zeichen. Wird benötigt für die Bestätigung der Kontoerstellung.
+  RecoverPasswordResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/OpResult'
+  RecoverUsernameResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/OpResult'
+  SetPasswordParams:
+    type: object
+    properties:
+      code:
+        type: string
+        description: Der Passwortresetcode.
+      username:
+        type: string
+        description: Der Benutzername 1 .. 80 Zeichen. Wird für das Anmeldung benötigt.
+      password:
+        type: string
+        description: Das Passwort 1 .. 80 Zeichen. Wird für die Anmeldung benötigt.
+  SetPasswordResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/OpResult'
+  GetProfilesResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/OpResult'
+  GetProfileResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/OpResult'
+  UsersDto:
+    type: object
+    properties:
+      users:
+        type: array
+        items:
+          $ref: '#/definitions/UserDto'
+  UserDto:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Then user id
+      firstName:
+        type: string
+        description: The first name of user
+      lastName:
+        type: string
+        description: The last name of user
+      email:
+        type: string
+        description: The email of the user
+      emailConfirmed:
+        type: boolean
+        description: The confirmed status of the user registration
+      accessFailedCount:
+        type: number
+        description: The number of failed access attempts
+      roleNames:
+        type: array
+        items:
+          $ref: '#/definitions/RoleDto'
+  RoleDto:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Name of role
+  SessionsDto:
+    type: object
+    properties:
+      sessions:
+        type: array
+        items:
+          $ref: '#/definitions/SessionDto'
+  SessionDto:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Then sessions id
+      userid:
+        type: string
+        description: The userid associated with the session
+      email:
+        type: string
+        description: the email of the user
+      created:
+        type: string
+        description: The timestamp of the creation
+      isStop:
+        type: boolean
+        description: True if the session is stopped
+################################################################################
+#                                 Sub - Definitions                            #
+################################################################################              
+  OpResult:
+    type: object
+    properties:
+      success:
+        type: boolean
+        description: True wenn die Operation erfolgreich war
+      result:
+        type: string
+        description: Eine Text-Meldung
