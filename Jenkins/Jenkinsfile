@@ -1,0 +1,88 @@
+#!/usr/bin/env groovy
+
+/*
+	Jenkins Pipeline
+	Build and Deploy Angusido
+	
+	Required environment variables:
+	
+	THE_REPO=<git repository url>
+	PROJECT_CONFIG=<path to config data on build server>
+	BACKEND_SITE_LOCATION=<path to backend site directory>
+	WEBCLIENT_SITE_LOCATION=<path to Bootstrap 4 client site directory>
+
+*/
+
+node {
+    stage('scm_stage'){
+        git changelog: false, poll: false, url: '${THE_REPO}'    
+        
+    }
+    stage('prime_stage'){
+        def status0 = powershell(returnStatus: true, script: 'Copy-Item $env:PROJECT_CONFIG/angusido-client-config.ts $env:WORKSPACE/AnWebClient/src/app/angusido-client-config.ts')
+		if ( status0 == 0){
+			echo 'Copy config Angusido Web Client file ok'
+		}
+		else {
+			echo 'Copy config file Angusido Web Client failed'
+		}
+    }
+    stage('install'){
+        dir('AnWebClient') {
+            bat 'npm install'
+        }
+        dir('AnServer') {
+            bat 'dotnet restore'
+        }
+    }
+    stage('build'){
+        dir('AnWebClient'){
+            bat 'ng build --prod'
+        }
+        dir('Server'){
+            bat 'dotnet build --configuration "Release"'
+        }
+    }
+	stage('deploy'){
+		/* Server */
+        def status1 = powershell(returnStatus: true, script: 'Stop-WebAppPool -Name "AnDotNetCore"')
+		if ( status1 == 0){
+			echo 'Angusido AppPool stopped'
+		}
+		else {
+			echo 'Failed to stop Angusido AppPool'
+		}
+		dir('AnServer'){
+			bat 'dotnet publish --configuration "Release" --output %BACKEND_SITE_LOCATION%'
+		}
+        def status2 = powershell(returnStatus: true, script: 'Start-WebAppPool -Name "AnDotNetCore"')
+		if ( status2 == 0){
+			echo 'Angusido AppPool started'
+		}
+		else {
+			echo 'Failed to start Angusido AppPool'
+		}
+		/* AnWebClient */
+		dir('AnWebClient'){
+			def status3 = powershell(returnStatus: true, script: 'Remove-Item -path $env:WEBLIENT_SITE_LOCATION/*.* -recurse -include *.bundle.js,*.bundle.css')
+			if ( status3 == 0){
+				echo 'AnWebClientClient site location cleanup done'
+			}
+			else {
+				echo 'Failed to cleanup AnWebClient site location'
+			}
+		}
+		dir('AnWebClient'){
+			bat '(robocopy dist *.* %WEBCLIENT_SITE_LOCATION% /e /r:1 /unicode) ^& IF %ERRORLEVEL% LEQ 1 exit 0'
+		}
+		dir('AnWebClient'){
+			def status4 = powershell(returnStatus: true, script: 'Copy-Item web.config $env:WEBCLIENT_SITE_LOCATION/web.config')
+			if ( status4 == 0){
+				echo 'Copy web.config AnWebClient file ok'
+			}
+			else {
+				echo 'Copy web.config file AnWebClient failed'
+			}
+		}
+	}
+}
