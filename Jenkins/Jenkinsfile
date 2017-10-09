@@ -31,7 +31,7 @@ node {
         dir('AnWebClient') {
             bat 'npm install'
         }
-        dir('AnServer') {
+        dir('Server') {
             bat 'dotnet restore'
         }
     }
@@ -52,7 +52,7 @@ node {
 		else {
 			echo 'Failed to stop Angusido AppPool'
 		}
-		dir('AnServer'){
+		dir('Server'){
 			bat 'dotnet publish --configuration "Release" --output %BACKEND_SITE_LOCATION%'
 		}
         def status2 = powershell(returnStatus: true, script: 'Start-WebAppPool -Name "AnDotNetCore"')
@@ -63,6 +63,7 @@ node {
 			echo 'Failed to start Angusido AppPool'
 		}
 		/* AnWebClient */
+		/*
 		dir('AnWebClient'){
 			def status3 = powershell(returnStatus: true, script: 'Remove-Item -path $env:WEBLIENT_SITE_LOCATION/*.* -recurse -include *.bundle.js,*.bundle.css')
 			if ( status3 == 0){
@@ -84,5 +85,6 @@ node {
 				echo 'Copy web.config file AnWebClient failed'
 			}
 		}
+		*/
 	}
 }
