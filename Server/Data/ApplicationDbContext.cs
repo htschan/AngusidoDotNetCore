@@ -9,10 +9,9 @@ namespace Server.Data
         public ApplicationDbContext() { }
 
         public ApplicationDbContext(DbContextOptions options) : base(options) { }
-
-        public DbSet<RefreshToken> RefreshTokens { get; set; }
-        
+        public DbSet<RefreshToken> RefreshTokens { get; set; }       
         public DbSet<AppUser> AppUsers { get; set; }
+        public DbSet<AppProfile> AppProfiles { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

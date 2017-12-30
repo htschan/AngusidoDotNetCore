@@ -59,7 +59,7 @@ namespace Server.Domain.UserConfiguration
 
         public IList<RefreshToken> GetSessions()
         {
-            var tokens = _refreshTokenRepository.GetAll();
+            var tokens = _refreshTokenRepository.GetAll().ToList();
             foreach (var token in tokens)
             {
                 var user = _userManager.FindByIdAsync(token.ClientId).Result;

@@ -3,27 +3,21 @@ using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Server.Data;
 using Server.Helpers;
+using Server.Repositories;
 
 namespace Server.Domain.UserConfiguration.Repositories
 {
-    public class AppUserRepository : IAppUserRepository
+    public class AppUserRepository : Repository<AppUser, string>, IAppUserRepository
     {
-        private readonly ApplicationDbContext _appDbContext;
-        public AppUserRepository(ApplicationDbContext context)
+        public AppUserRepository(ApplicationDbContext context) : base(context)
         {
-            _appDbContext = context;
-        }
-
-        public void Delete(AppUser entity)
-        {
-            throw new NotImplementedException();
         }
 
         public AppUser FindByName(string userName)
         {
             try
             {
-                var value = _appDbContext.AppUsers.FirstOrDefault(b => b.UserName == userName);
+                var value = Context.AppUsers.FirstOrDefault(b => b.UserName == userName);
                 if (value == null)
                     throw new RepositoryException(StatusCodes.Status404NotFound, $"User {userName} not found");
                 return value;
@@ -42,7 +36,7 @@ namespace Server.Domain.UserConfiguration.Repositories
         {
             try
             {
-                var value = _appDbContext.AppUsers.FirstOrDefault(b => b.Id == userId);
+                var value = Context.AppUsers.FirstOrDefault(b => b.Id == userId);
                 if (value == null)
                     throw new RepositoryException(StatusCodes.Status404NotFound, $"User Id {userId} not found");
                 return value;
@@ -55,35 +49,6 @@ namespace Server.Domain.UserConfiguration.Repositories
             {
                 throw new RepositoryException(StatusCodes.Status400BadRequest, $"FindByName {userId} threw an exception: {exception.Message}", exception);
             }
-        }
-
-        public System.Collections.Generic.IList<AppUser> GetAll()
-        {
-            try
-            {
-                var value = _appDbContext.AppUsers;
-                if (value == null)
-                    throw new RepositoryException(StatusCodes.Status404NotFound, $"Users not found");
-                return value.ToList();
-            }
-            catch (RepositoryException)
-            {
-                throw;
-            }
-            catch (Exception exception)
-            {
-                throw new RepositoryException(StatusCodes.Status400BadRequest, $"GetAll threw an exception: {exception.Message}", exception);
-            }
-        }
-
-        public void Insert(AppUser entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Update(AppUser entity)
-        {
-            throw new NotImplementedException();
         }
     }
 }

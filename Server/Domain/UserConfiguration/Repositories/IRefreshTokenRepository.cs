@@ -2,13 +2,10 @@ using Server.Repositories;
 
 namespace Server.Domain.UserConfiguration.Repositories
 {
-    public interface IRefreshTokenRepository : IRepository<RefreshToken>
+    public interface IRefreshTokenRepository : IRepository<RefreshToken, string>
     {
-        bool AddToken(RefreshToken token);
-
-        bool ExpireToken(RefreshToken token);
-
+        void AddToken(RefreshToken token);
+        void ExpireToken(RefreshToken token);
         RefreshToken GetToken(string refresh_token);
-
     }
 }

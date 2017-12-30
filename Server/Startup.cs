@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Server.Auth;
 using Server.Controllers;
 using Server.Data;
+using Server.Domain;
 using Server.Domain.UserConfiguration;
 using Server.Domain.UserConfiguration.Repositories;
 using Server.Helpers;
@@ -58,14 +59,15 @@ namespace Server
             services.AddTransient<DbInitializer>();
 
             services.AddTransient<IJwtFactory, JwtFactory>();
+
+            services.AddTransient<IAnController, AnControllerImpl>();
             services.AddSingleton<IHolidayService, HolidayService>();
             services.AddSingleton<ITimeService, TimeService>();
             services.AddTransient<IAnController, AnControllerImpl>();
             services.AddTransient<AppUser>();
             services.AddTransient<IdentityRole>();
             services.AddTransient<AppUserManager>();
-            services.AddTransient<IRefreshTokenRepository, RefreshTokenRepository>();
-            services.AddTransient<IAppUserRepository, AppUserRepository>();
+            services.AddTransient<IUnitOfWork, UnitOfWork>();
 
             // api user claim policy
             services.AddAuthorization(options =>
