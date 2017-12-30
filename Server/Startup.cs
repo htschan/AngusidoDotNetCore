@@ -54,7 +54,7 @@ namespace Server
 
             // Add framework services.
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddEntityFrameworkSqlite().AddDbContext<TpContext>();
+            services.AddEntityFrameworkSqlite().AddDbContext<ApplicationDbContext>();
             services.AddTransient<DbInitializer>();
 
             services.AddTransient<IJwtFactory, JwtFactory>();
@@ -85,7 +85,7 @@ namespace Server
                     o.Password.RequiredLength = 6;
                     o.SignIn.RequireConfirmedEmail = true;
                 })
-                .AddEntityFrameworkStores<TpContext>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
             services.AddMvc().AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<Startup>());

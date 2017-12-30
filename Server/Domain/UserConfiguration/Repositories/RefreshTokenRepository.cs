@@ -11,7 +11,7 @@ namespace Server.Domain.UserConfiguration.Repositories
     {
         public bool AddToken(RefreshToken token)
         {
-            using (var db = new TpContext())
+            using (var db = new ApplicationDbContext())
             {
                 db.RefreshTokens.Add(token);
                 return db.SaveChanges() > 0;
@@ -20,7 +20,7 @@ namespace Server.Domain.UserConfiguration.Repositories
 
         public bool ExpireToken(RefreshToken token)
         {
-            using (var db = new TpContext())
+            using (var db = new ApplicationDbContext())
             {
                 db.RefreshTokens.Update(token);
                 return db.SaveChanges() > 0;
@@ -29,7 +29,7 @@ namespace Server.Domain.UserConfiguration.Repositories
 
         public RefreshToken GetToken(string refreshToken)
         {
-            using (var db = new TpContext())
+            using (var db = new ApplicationDbContext())
             {
                 return db.RefreshTokens.FirstOrDefault(x => x.Token == refreshToken);
             }
@@ -42,7 +42,7 @@ namespace Server.Domain.UserConfiguration.Repositories
 
         public IList<RefreshToken> GetAll()
         {
-            using (var db = new TpContext())
+            using (var db = new ApplicationDbContext())
             {
                 try
                 {

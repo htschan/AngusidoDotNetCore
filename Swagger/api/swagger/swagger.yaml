@@ -105,7 +105,7 @@ paths:
           schema:
             $ref: '#/definitions/OpResult'
   /confirm:
-    get:
+    post:
       description:
         Diese Methode wird durch den Bestätigungslink aufgerufen.
       summary: Eine Benutzerregistrierung bestätigen [AllowAnonymous]

@@ -1,0 +1,9 @@
+{
+  "AnMailConfigOptions": {
+    "Host": "mail.tsc17.com",
+    "Port": 25,
+    "User": "tp@tsc17.com",
+    "Password": "axil311",
+    "From": "tp@tsc17.com"
+  }
+}

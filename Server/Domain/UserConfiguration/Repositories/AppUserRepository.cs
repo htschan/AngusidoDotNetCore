@@ -8,8 +8,8 @@ namespace Server.Domain.UserConfiguration.Repositories
 {
     public class AppUserRepository : IAppUserRepository
     {
-        private readonly TpContext _appDbContext;
-        public AppUserRepository(TpContext context)
+        private readonly ApplicationDbContext _appDbContext;
+        public AppUserRepository(ApplicationDbContext context)
         {
             _appDbContext = context;
         }

@@ -11,13 +11,13 @@ namespace Server.Data
 {
     public class DbInitializer : IDisposable
     {
-        private readonly TpContext _context;
+        private readonly ApplicationDbContext _context;
         private readonly AppUserManager _appUserManager;
         private readonly IMapper _mapper;
         private readonly ITimeService _timeService;
         private readonly Random _random;
 
-        public DbInitializer(TpContext context, AppUserManager appUserManager, IMapper mapper, ITimeService timeService)
+        public DbInitializer(ApplicationDbContext context, AppUserManager appUserManager, IMapper mapper, ITimeService timeService)
         {
             _context = context;
             _appUserManager = appUserManager;

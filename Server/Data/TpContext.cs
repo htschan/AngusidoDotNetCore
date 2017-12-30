@@ -4,11 +4,11 @@ using Server.Domain.UserConfiguration;
 
 namespace Server.Data
 {
-    public class TpContext : IdentityDbContext<AppUser>
+    public class ApplicationDbContext : IdentityDbContext<AppUser>
     {
-        public TpContext() { }
+        public ApplicationDbContext() { }
 
-        public TpContext(DbContextOptions options) : base(options) { }
+        public ApplicationDbContext(DbContextOptions options) : base(options) { }
 
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         
@@ -16,7 +16,7 @@ namespace Server.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite("Data Source=tp.sqlite");
+            optionsBuilder.UseSqlite("Data Source=angusido.sqlite");
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
